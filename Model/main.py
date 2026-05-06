@@ -1,3 +1,4 @@
+import re
 import speech_recognition as sr
 import serial
 import os
@@ -14,32 +15,49 @@ r.dynamic_energy_threshold = False
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def detect_command(text):
+def detect_action(text):
+    if any(word in text for word in ["bật", "mở", "sáng"]):
+        return "ON"
+    elif any(word in text for word in ["tắt", "đóng"]):
+        return "OFF"
+    return None
+
+def detect_room(text):
+    if any(word in text for word in ["cả nhà", "toàn bộ", "tất cả", "hết"]):
+        return "ALL"
+    elif "khách" in text:
+        return "LIVINGROOM"
+    elif "ăn" in text:
+        return "DININGROOM"
+    elif "ngủ" in text:
+        return "BEDROOM"
+    elif "sân" in text:
+        return "YARD"
+    return None
+
+def detect_commands(text):
     text = text.lower()
 
-    # xác định hành động
-    if any(word in text for word in ["bật", "mở", "sáng"]):
-        action = "ON"
-    elif any(word in text for word in ["tắt", "đóng"]):
-        action = "OFF"
-    else:
-        return None
+    # tách câu thành các phần bằng dấu phẩy, "và", "với", "rồi"
+    parts = re.split(r'[,]+|\s+và\s+|\s+với\s+|\s+rồi\s+', text)
+    parts = [p.strip() for p in parts if p.strip()]
 
-    # xác định phòng
-    if any(word in text for word in ["cả nhà", "toàn bộ", "tất cả", "hết", "cả"]):
-        room = "ALL"
-    elif "khách" in text:
-        room = "LIVINGROOM"
-    elif "ăn" in text:
-        room = "DININGROOM"
-    elif "ngủ" in text:
-        room = "BEDROOM"
-    elif "sân" in text:
-        room = "YARD"
-    else:
-        return None
+    commands = []
+    last_action = None
 
-    return f"{room}_{action}"
+    for part in parts:
+        action = detect_action(part)
+        room = detect_room(part)
+
+        # nếu phần này không có hành động, dùng hành động trước đó
+        if action is None and last_action is not None:
+            action = last_action
+
+        if action and room:
+            commands.append(f"{room}_{action}")
+            last_action = action
+
+    return commands
 
 print("=== Điều khiển bằng giọng nói (Ctrl+C để thoát) ===")
 
@@ -59,10 +77,12 @@ with sr.Microphone() as source:
             print("=== Điều khiển bằng giọng nói (Ctrl+C để thoát) ===\n")
             print(f"🗣️  Bạn nói: {text}")
 
-            cmd = detect_command(text)
-            if cmd:
-                ser.write((cmd + "\n").encode())
-                print(f"✅ Gửi: {cmd}\n")
+            cmds = detect_commands(text)
+            if cmds:
+                for cmd in cmds:
+                    ser.write((cmd + "\n").encode())
+                    print(f"✅ Gửi: {cmd}")
+                print()
             else:
                 print("❌ Không hiểu lệnh\n")
 
