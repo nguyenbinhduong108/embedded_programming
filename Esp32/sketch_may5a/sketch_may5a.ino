@@ -28,8 +28,16 @@ void loop() {
     command = Serial.readStringUntil('\n');
     command.trim();
 
-    Serial.print("Received: ");
-    Serial.println(command);
+    Serial.print("Received: [");
+    Serial.print(command);
+    Serial.print("] len=");
+    Serial.print(command.length());
+    Serial.print(" bytes:");
+    for (int i = 0; i < command.length(); i++) {
+      Serial.print(" 0x");
+      Serial.print((int)command[i], HEX);
+    }
+    Serial.println();
 
     handleCommand(command);
   }
@@ -38,46 +46,56 @@ void loop() {
 void handleCommand(String cmd) {
   // ===== ALL =====
   if (cmd == "ALL_ON") {
-    setAll(LOW);
-  } 
-  else if (cmd == "ALL_OFF") {
+    Serial.println("-> ALL_ON matched");
     setAll(HIGH);
+  }
+  else if (cmd == "ALL_OFF") {
+    Serial.println("-> ALL_OFF matched");
+    setAll(LOW);
   }
 
   // ===== LIVING ROOM =====
   else if (cmd == "LIVINGROOM_ON") {
-    digitalWrite(livingRoom, LOW);
-  } 
-  else if (cmd == "LIVINGROOM_OFF") {
+    Serial.println("-> LIVINGROOM_ON matched");
     digitalWrite(livingRoom, HIGH);
+  }
+  else if (cmd == "LIVINGROOM_OFF") {
+    Serial.println("-> LIVINGROOM_OFF matched");
+    digitalWrite(livingRoom, LOW);
   }
 
   // ===== DINING ROOM =====
   else if (cmd == "DININGROOM_ON") {
-    digitalWrite(diningRoom, LOW);
-  } 
-  else if (cmd == "DININGROOM_OFF") {
+    Serial.println("-> DININGROOM_ON matched");
     digitalWrite(diningRoom, HIGH);
+  }
+  else if (cmd == "DININGROOM_OFF") {
+    Serial.println("-> DININGROOM_OFF matched");
+    digitalWrite(diningRoom, LOW);
   }
 
   // ===== BEDROOM =====
   else if (cmd == "BEDROOM_ON") {
-    digitalWrite(bedRoom, LOW);
-  } 
-  else if (cmd == "BEDROOM_OFF") {
+    Serial.println("-> BEDROOM_ON matched");
     digitalWrite(bedRoom, HIGH);
+  }
+  else if (cmd == "BEDROOM_OFF") {
+    Serial.println("-> BEDROOM_OFF matched");
+    digitalWrite(bedRoom, LOW);
   }
 
   // ===== YARD =====
   else if (cmd == "YARD_ON") {
-    digitalWrite(yard, LOW);
-  } 
-  else if (cmd == "YARD_OFF") {
+    Serial.println("-> YARD_ON matched");
     digitalWrite(yard, HIGH);
+  }
+  else if (cmd == "YARD_OFF") {
+    Serial.println("-> YARD_OFF matched");
+    digitalWrite(yard, LOW);
   }
 
   else {
-    Serial.println("Unknown command");
+    Serial.println("-> NO MATCH!");
   }
 }
 
